@@ -1,5 +1,3 @@
-shutil
-
 psutil==5.9.5
 zstandard>=0.21.0
 

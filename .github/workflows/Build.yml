@@ -17,7 +17,7 @@ jobs:
           - x86
           - arm64
         zzlversion: 
-          - 1.0.0.1
+          - 1.0.0.2
 
     runs-on: ${{ matrix.os }}
 
@@ -46,15 +46,12 @@ jobs:
           python -m nuitka
           --standalone
           --clang
-          --msvc=latest
-          --disable-plugin=multiprocessing
-          --nofollow-import-to=scipy
-          --nofollow-import-to=numpy
           --output-dir=build
           --assume-yes-for-downloads
           --disable-console
           --product-name="ZZL"
           --file-version=${{ matrix.zzlversion }}
+          --windows-icon-from-ico=ZZL.ico
           --product-version=${{ matrix. zzlversion }}
           --windows-file-description="School Work Helper"
           --follow-import-to=ZZL_Lib
@@ -89,7 +86,7 @@ jobs:
           - x86
           - arm64
         zzlversion: 
-          - 1.0.0.1
+          - 1.0.0.2
 
     runs-on: ${{ matrix.os }}
 
@@ -124,14 +121,12 @@ jobs:
           --clang
           --msvc=latest
           --standalone
-          --disable-plugin=multiprocessing
-          --nofollow-import-to=scipy
-          --nofollow-import-to=numpy
           --assume-yes-for-downloads
           --disable-console
           --follow-import-to=ZZL_Lib
           --lto=no
           --output-dir=build
+          --linux-icon=ZZL.ico
           --product-name="ZZL"
           --file-version=${{ matrix.zzlversion }}
           --product-version=${{ matrix.zzlversion }}
@@ -163,7 +158,7 @@ jobs:
     strategy:
       matrix:
         zzlversion: 
-          - 1.0.0.1
+          - 1.0.0.2
 
     steps:
 
@@ -195,7 +190,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body_path: ./repo/ChangeLog.md
-          prerelease: false
+          prerelease: true
           draft: false
           tag_name: v${{ matrix.zzlversion }}
           files: |

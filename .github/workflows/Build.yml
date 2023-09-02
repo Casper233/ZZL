@@ -143,7 +143,6 @@ jobs:
         run: |
           cd build
           cd ZZL.dist
-          rm -r zstandard
           sudo rm _asyncio.so
           sudo rm _multiprocessing.so
           sudo rm _queue.so

@@ -38,6 +38,8 @@ def Main():
         if program_name == "新周复制":
             ZZL_Lib.ZZL_CopyFile.FileCopy()
             print("程序已完成")
+        elif program_name == "统计某日数据整合":
+            print("程序已完成")
 
     print("程序已退出")
 

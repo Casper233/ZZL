@@ -2,6 +2,9 @@ import os
 import shutil
 from datetime import datetime
 
+# Old
+# Not in use
+
 # 让用户输入周数和班级
 week_num = input("请输入周数：")
 class_name = input("请输入班级名称：")

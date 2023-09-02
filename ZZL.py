@@ -12,7 +12,7 @@ def close_window():
 
 
 def Main():
-    program_list = ["新周复制", "不知道啥程序", "还是不知道是啥程序"]
+    program_list = ["新周复制", "统计某日数据整合", "还是不知道是啥程序"]
 
     while True:
         print("请选择要执行的程序：")

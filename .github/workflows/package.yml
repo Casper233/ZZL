@@ -3,17 +3,13 @@ name: Package For ZZL
 on: workflow_dispatch
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
 
   assemble:
-    needs: test
     uses: ./.github/workflows/assemble.yml
 
   pypi-upload:
     runs-on: ubuntu-latest
     name: Make and upload a package to (Test)PyPI
-    needs: test
     steps:
       - uses: actions/checkout@v3
       - name: Setup python

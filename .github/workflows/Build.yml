@@ -143,7 +143,6 @@ jobs:
         run: |
           cd build
           cd ZZL.dist
-          sudo rm _multiprocessing.so
           sudo rm _queue.so
           upx -9 ZZL.bin
 

@@ -1,0 +1,27 @@
+name: Assemble a Dev Source Compressed File
+
+on: workflow_call
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    name: Assemble all ZZL files
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Dev Build
+        run: |
+          mkdir ZZL
+          mv * ZZL || true
+          cd ZZL
+          rm -rf .git tests
+          rm -rf .ideas
+          rm -f .gitignore ZZL.ico ZZL.png setup.py MANIFEST.in *.md
+          mkdir 模板
+          cd ..
+          zip -r ZZL.zip ./ZZL
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ZZL Files for ${{ github.sha }}
+          path: ZZL.zip

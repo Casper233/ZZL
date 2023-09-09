@@ -15,8 +15,8 @@ def start_dealer():
     # 创建logger对象
     logger = logging.getLogger(__name__)
 
-    # 设置日志级别
-    logger.setLevel(logging.DEBUG)
+    # 设置日志级别为INFO
+    logger.setLevel(logging.INFO)
 
     # 创建文件处理器
     filename = now.strftime("%Y-%m-%d_%H-%M-%S") + "dealer-log.txt"

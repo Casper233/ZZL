@@ -1,8 +1,11 @@
+import argparse
 import os
 import shutil
 import time
 from datetime import datetime
-from docx import Document
+
+import docx
+
 timestamp = time.strftime("%Y-%m-%d %H-%M-%S", time.localtime())
 
 def close_window():
@@ -101,7 +104,36 @@ def FileCopy_Start():
 
 
 def Input_Data():
-    folder_path = input("请输入文件夹路径：")
+    parser = argparse.ArgumentParser(description='处理Word文件中的文本信息')
+    parser.add_argument('path', metavar='path', type=str, nargs='?', default=os.getcwd(),
+                        help='指定要处理的文件或文件夹路径，默认为当前工作目录')
+    args = parser.parse_args()
+    # 判断要处理的路径是否存在
+    if not os.path.exists(args.path):
+        logmake("FileInput_MainThread",f"路径 {args.path} 不存在",1)
+        print(f"路径 {args.path} 不存在")
+        return
+    # 判断要处理的路径是文件还是文件夹
+    if os.path.isfile(args.path) and args.path.endswith('.docx'):
+        # 处理单个Word文件
+        logmake("FileInput_MainThread",f"处理文件 {args.path} 中的文本信息...", 0)
+        print(f"处理文件 {args.path} 中的文本信息...")
+        deal_with_docx(args.path)
+    elif os.path.isdir(args.path):
+        # 处理一个文件夹中的所有Word文件
+        os.chdir(args.path)  # 将当前工作目录更改为指定路径
+        files = list_files(args.path)
+        print("目录列表：")
+        for i, f in enumerate(files):
+            print(f" {i + 1}. {f}")
+        deal_with_folder(args.path)
+    else:
+        logmake("FileInput_MainThread", f"路径 {args.path} 不是一个有效的Word文件或文件夹！", 2)
+        print(f"路径 {args.path} 不是一个有效的Word文件或文件夹！")
+
+    '''
+    
+    folder_path = choose_file_or_folder()
     logmake("FileInput_MainThread", f"{datetime.now()} 输入的文件夹路径为 {folder_path}", 0)
     # 进入文件夹，复制其中的”模板.docx“并重命名
     template_path = os.path.join(folder_path, "x.x 星期x（高中模板）.docx")
@@ -112,15 +144,22 @@ def Input_Data():
         new_file_name = date + weekday + ".docx"
         new_file_path = os.path.join(folder_path, new_file_name)
         shutil.copy(template_path, new_file_path)
-        logmake("FileInput_MainThread", f"{datetime.now()} 复制已完成", 0)
+        logmake("FileInput_MainThread", f"{datetime.now()} 复制模板文件成功", 0)
     else:
-        print("模板文件不存在")
-        logmake("FileInput_MainThread", f"{datetime.now()} 模板文件不存在", 1)
-        exit()
-
+        print("模板文件不存在，请确保模板文件位于指定的文件夹中")
+        logmake("FileInput_MainThread", f"{datetime.now()} 模板文件不存在，请确保模板文件位于指定的文件夹中", 1)
+        return
+    
     # 读取word文件并进行拆分
     document = Document(new_file_path)
     sections = []
+    List_EntT = []
+    with open(template_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            if line.startswith('大标题'):
+                continue
+            List_EntT.append(line.strip())
+    
     for section in document.sections:
         sections.append(section)
     sections.append(None)
@@ -138,7 +177,7 @@ def Input_Data():
                 break
             section_headings.append(heading)
         sections_headings.append(section_headings)
-
+    
     # 在每个大标题下让用户输入信息
     for i in range(len(sections) - 1):
         print("以下是第", i + 1, "个大标题下的信息：")
@@ -160,26 +199,78 @@ def Input_Data():
 
     # 保存word文件
     document.save(new_file_path)
+    '''
 
+def deal_with_folder(foldername):
+    # 处理一个文件夹中的所有Word文件
+    while True:
+        files = os.listdir(foldername)
+        docx_files = [f for f in files if os.path.isfile(os.path.join(foldername, f)) and f.endswith('.docx')]
+        if len(docx_files) == 0:
+            logmake("FileInput_Dealfolder", "文件夹中没有Word文件", 2)
+            print("文件夹中没有Word文件")
+            foldername, files = choose_file_or_folder(files, foldername)
+        else:
+            break
+
+    # 让用户选择要处理的 Word 文件
+    if len(docx_files) > 1:
+        logmake("FileInput_Dealfolder", f"文件夹中有以下 {len(docx_files)} 个Word文件：", 0)
+        print(f"文件夹中有以下 {len(docx_files)} 个Word文件：")
+        for i, f in enumerate(docx_files):
+            logmake("FileInput_Dealfolder", f"  {i+1}. {f}", 0)
+        while True:
+            choice = input("请选择一个文件（输入数字）：")
+            if choice.isdigit() and int(choice) >= 1 and int(choice) <= len(docx_files):
+                filename = docx_files[int(choice)-1]
+                filepath = os.path.join(foldername, filename)
+                logmake("FileInput_Dealfolder", f"处理文件 {filepath} 中的文本信息...", 0)
+                print(f"处理文件 {filepath} 中的文本信息...")
+                deal_with_docx(filepath)
+                break
+    else:
+        filename = docx_files[0]
+        filepath = os.path.join(foldername, filename)
+        logmake("FileInput_Dealfolder", f"处理文件 {filepath} 中的文本信息...", 0)
+        print(f"处理文件 {filepath} 中的文本信息...")
+        deal_with_docx(filepath)
+
+def deal_with_docx(filename):
+    try:
+        doc = docx.Document(filename)
+    except Exception as e:
+        logmake("FileInput_Dealdoc", f"文件 {filename} 不是有效的 Word 文件或者无法打开", 2)
+        print(f"文件 {filename} 不是有效的 Word 文件或者无法打开")
+        choice = input("是否重新选择文件？（y/n）")
+        if choice.lower() == 'y':
+            return
+        else:
+            raise e
+
+    # 将文本信息存储到文件中
+    with open('dealer_temp/deal.txt', 'w', encoding='utf-8') as f:
+        for para in doc.paragraphs:
+            if para.text.strip():  # 只处理非空段落
+                f.write(para.text + '\n')
+    logmake("FileInput_Dealer", f"文件 {filename} 中的文本信息已经存储到 dealer_temp/deal.txt 文件中", 0)
+    print(f"文件 {filename} 中的文本信息已经存储到 dealer_temp/deal.txt 文件中")
 
 def list_files(path, show_files=True):
-    logmake("FileInput_MainThread", f"列出目录 {os.path.abspath(path)} 中的文件和文件夹", 0)
+    logmake("FileInput_Filelist", f"列出目录 {os.path.abspath(path)} 中的文件和文件夹", 0)
     try:
         files = os.listdir(path)
     except Exception as e:
-        logmake("FileInput_MainThread", f"{datetime.now()} 无法列出 {path} 目录中的文件和文件夹", 2)
-        raise e
+        print(f"{e}")
+        return []
     if show_files:
         for i, f in enumerate(files):
             if os.path.isdir(os.path.join(path, f)):
                 files[i] = f + '/'
-            logmake("FileInput_MainThread", f"{datetime.now()} {i+1}. {files[i]}", 0)
+            logmake("FileInput_Filelist", f"{i+1}. {files[i]}", 0)
             print(f" {i+1}. {files[i]}")
     else:
         files = []
     return files
-
-
 
 
 # 选择一个文件或文件夹
@@ -205,7 +296,7 @@ def Main():
 
     create_log_file()
 
-    logmake("System_Event_Handler", f"{datetime.now()} 主程序已启动", 0)
+    logmake("System_Event_Handler", f" 主程序已启动", 0)
 
     program_list = ["新周复制", "记录输入数据", "统计某日数据整合"]
 
@@ -217,9 +308,9 @@ def Main():
 
         choice = input("请输入程序编号：")
         if choice == "0":
-            logmake("System_Event_Handler", f"{datetime.now()} 选择的程序编号为 {choice}", 0)
-            logmake("System_Event_Handler", f"{datetime.now()} 正在关闭程序", 0)
-            logmake("System_Event_Handler", f"{datetime.now()} Bye~", 0)
+            logmake("System_Event_Handler", f" 选择的程序编号为 {choice}", 0)
+            logmake("System_Event_Handler", f" 正在关闭程序", 0)
+            logmake("System_Event_Handler", f" Bye~", 0)
             break
 
         try:
